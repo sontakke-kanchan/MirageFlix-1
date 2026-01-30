@@ -17,12 +17,12 @@ type Props = {
 };
 
 export default function SlowShowRow({ query = "" }: Props) {
-  console.count("SlowShowRow render");
-
   const [allShows, setAllShows] = useState<Show[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.count("[Slow API Calls -> SlowShowRow] Fetching shows");
+
     fetch(
       `${tmdbConfig.baseUrl}/trending/movie/week?api_key=${tmdbConfig.apiKey}`,
     )
@@ -43,11 +43,10 @@ export default function SlowShowRow({ query = "" }: Props) {
             : undefined,
         }));
 
-        // ⚠️ Mild data inflation (not insane)
-        const inflated = Array.from({ length: 40 }).flatMap((_, index) =>
+        const inflated = Array.from({ length: 100 }).flatMap((_, index) =>
           mapped.map((item) => ({
             ...item,
-            id: item.id * 100 + index,
+            id: item.id * 250 + index,
           })),
         );
 
@@ -56,7 +55,8 @@ export default function SlowShowRow({ query = "" }: Props) {
       });
   }, []);
 
-  // ❌ Still inefficient: filter on every render
+  console.log("[SLOW] Filtering shows for query:", query);
+  // Still inefficient: filter on every render
   const filteredShows = allShows.filter((show) =>
     show.title.toLowerCase().includes(query.toLowerCase()),
   );

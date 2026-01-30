@@ -43,14 +43,14 @@ export default function HomePage() {
               <Title id="trending-title" order={2} size="h4" aria-description="Popular Shows" my="sm">
                 Popular
               </Title>
-              <ShowRowComponent query={query} />
+              <ShowRowComponent />
             </section>
 
             <section aria-labelledby="trending-title">
               <Title id="trending-title" order={2} size="h4" aria-description="Recommended Shows" my="sm">
                 Recommended
               </Title>
-              <ShowRowComponent query={query} />
+              <ShowRowComponent />
             </section>
           </Stack>
         </Container>

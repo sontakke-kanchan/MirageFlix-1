@@ -76,26 +76,30 @@ User Impact
 
 This mirrors what happens in many production apps before optimization.
 
-## 4. Optimization Strategy
-
-The optimized version focuses on targeted, explainable improvements rather than premature micro-optimizations.
-
-### 4.1 Deferred Input (useDeferredValue)
-
-Problem
-Filtering large datasets synchronously blocks the main thread while the user types.
-
-Solution
-
+### 4.1 Debounced Input Handling
+#### Problem
+Filtering large datasets synchronously on every keystroke causes:
+- Excessive computations
+- Unnecessary re-renders
+- Input lag under load
+#### Solution
+Instead of reacting to every keystroke immediately, the optimized version
+uses **debounced input handling**.
 ```ts
-const deferredQuery = useDeferredValue(query);
+const debouncedQuery = useDebouncedValue(query, 300);
 ```
 
-This allows:
-
-- Immediate UI updates for input
-- Background processing for expensive filtering
-- Improved perceived responsiveness
+This ensures filtering logic runs only after the user pauses typing.
+Benefits
+- Dramatically fewer filtering executions
+- Predictable performance behavior
+- Smooth typing experience
+- Clear separation between user intent and computationThis ensures filtering logic runs only after the user pauses typing.
+Benefits
+- Dramatically fewer filtering executions
+- Predictable performance behavior
+- Smooth typing experience
+- Clear separation between user intent and computation
 
 ### 4.2 Memoized Computation (useMemo)
 
@@ -107,9 +111,9 @@ Solution
 ```ts
 const filteredShows = useMemo(() => {
   return allShows.filter((show) =>
-    show.title.toLowerCase().includes(deferredQuery.toLowerCase()),
+    show.title.toLowerCase().includes(debouncedQuery.toLowerCase()),
   );
-}, [allShows, deferredQuery]);
+}, [allShows, debouncedQuery]);
 ```
 
 This ensures:
@@ -122,7 +126,7 @@ This ensures:
 Location
 
 ```
-src/components/optimized/ShowRow.tsx
+src/components/optimized/OptimizedShowRow.tsx
 ```
 
 Improvements Achieved

@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useMemo, useState, useDeferredValue } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Text } from "@mantine/core";
 import { Carousel } from "@mantine/carousel";
 import { IconChevronRight, IconChevronLeft } from "@tabler/icons-react";
 import ShowCard from "../shared/ShowCard";
+import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 import { tmdbConfig } from "../../config/tmdb";
 
 type Show = {
@@ -21,9 +22,11 @@ export default function OptimizedShowRow({ query = "" }: Props) {
   const [allShows, setAllShows] = useState<Show[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const deferredQuery = useDeferredValue(query);
+  const debouncedQuery = useDebouncedValue(query, 300);
 
   useEffect(() => {
+    console.count("[Optimized API Calls -> OptimizedShowRow] Fetching shows");
+
     fetch(
       `${tmdbConfig.baseUrl}/trending/movie/week?api_key=${tmdbConfig.apiKey}`,
     )
@@ -47,9 +50,14 @@ export default function OptimizedShowRow({ query = "" }: Props) {
   }, []);
 
   const filteredShows = useMemo(() => {
-    const q = deferredQuery.toLowerCase();
-    return allShows.filter((show) => show.title.toLowerCase().includes(q));
-  }, [allShows, deferredQuery]);
+    console.log(
+      "[OPTIMIZED] Filtering shows for debounced query:",
+      debouncedQuery,
+    );
+    return allShows.filter((show) =>
+      show.title.toLowerCase().includes(debouncedQuery.toLowerCase()),
+    );
+  }, [allShows, debouncedQuery]);
 
   if (loading) {
     return <Text c="dark.2">Loading…</Text>;
@@ -61,8 +69,12 @@ export default function OptimizedShowRow({ query = "" }: Props) {
       slideGap="md"
       withControls
       controlSize={40}
-      nextControlIcon={<IconChevronRight aria-label="Carousel Left" size={32} />}
-      previousControlIcon={<IconChevronLeft aria-label="Carousel Right" size={32} />}
+      nextControlIcon={
+        <IconChevronRight aria-label="Carousel Left" size={32} />
+      }
+      previousControlIcon={
+        <IconChevronLeft aria-label="Carousel Right" size={32} />
+      }
       styles={{
         controls: {
           top: "50%",
@@ -91,7 +103,6 @@ export default function OptimizedShowRow({ query = "" }: Props) {
     >
       {filteredShows.map((show) => (
         <Carousel.Slide key={show.id}>
-          {/* 🔑 FIXED WIDTH WRAPPER */}
           <div style={{ width: 160 }}>
             <ShowCard
               title={show.title}
